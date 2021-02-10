@@ -38,7 +38,7 @@ setup(
     install_requires=get_requirements('prod.txt'),
     setup_requirements=get_requirements('build.txt'),
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: MIT License',

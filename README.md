@@ -2,6 +2,12 @@
 
 > Action with a Y! Why? Cause `async` is in the box.
 
+[![MIT license](https://badgen.net/github/license/neatc0der/actyon)](https://github.com/neatc0der/actyon/blob/master/LICENSE)
+[![PyPI](https://badgen.net/pypi/v/actyon)](https://pypi.org/project/actyon/)
+[![Latest Release](https://badgen.net/github/release/neatc0der/actyon/latest)](https://github.com/neatc0der/actyon/releases/latest)
+[![Open Issues](https://badgen.net/github/open-issues/neatc0der/actyon)](https://github.com/neatc0der/actyon/issues)
+[![Open PRs](https://badgen.net/github/open-prs/neatc0der/actyon)](https://github.com/neatc0der/actyon/pulls)
+
 `actyon` offers an approach on a multiplexed flux pattern using coroutines ([PEP 492](https://www.python.org/dev/peps/pep-0492/)).
 
 ## Idea
@@ -85,7 +91,6 @@ from dateutil.parser import parse
 from gidgethub.aiohttp import GitHubAPI
 
 
-username: str = "your_username"
 query: str = """
 {
   viewer {
@@ -173,4 +178,4 @@ Once you start developing software, you want it to simplify things. That's the w
 * Interface segregation principle
 * Dependency inversion principle
 
-In this code the bottom two are quite shallow and not really applicable, but let's not get stuck with this. Another key feature of the functional interface is the simplicity. Define an action, use the decorators on whatever functions you have and just execute it. It even got a nice console output when you add `hook=DisplayHook()` to the `Actyon`'s constructor. Try it out!
+In this code the bottom two are quite shallow and not really applicable, but let's not get stuck with this. Another key feature of the functional interface is the simplicity. Define an action, use the decorators on whatever functions you have and just execute it. It even got a nice console output when you add `hook=actyon.DisplayHook()` to the `Actyon`'s constructor. Try it out, but caution: parallel actyon execution will break the rendering.
