@@ -1,0 +1,8 @@
+# classes
+attrs
+
+# console output
+colorama
+prettytable
+progress
+

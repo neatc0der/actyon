@@ -1,0 +1,7 @@
+PROJECT_VERSION = "0.1.0"
+
+PACKAGE_NAME = "actyon"
+PROJECT_NAME = PACKAGE_NAME.replace("_", "-")
+
+OWNER = "neatc0der"
+REPOSITORY_NAME = f"{OWNER}/{PROJECT_NAME}"
