@@ -37,13 +37,49 @@
 pip install actyon
 ```
 
-## Usage
+## Simple Usage
+
+Define an interface class for your actyon, like `MyResult`.
+
+Create a producer with return annotation `MyResult` or `List[MyResult]`:
+
+```python
+from actyon import produce
+
+@produce("my_thing")
+async def my_producer(dependency: MyDependency) -> MyResult:
+    # your magic code ...
+    return my_result
+```
+
+Create a consumer taking exactly one parameter of type `List[MyResult]`:
+
+```python
+from actyon import consume
+
+@consume("my_thing")
+async def my_consumer(results: List[MyResult]) -> None:
+    # do whatever you want with your results
+```
+
+Finally, execute your actyon:
+
+```python
+from actyon import execute
+
+execute("my_thing", dependencies)
+```
+
+By the way, `dependencies` can be any kind of object (iterable or simply an instance of your favorite class). By handing it over to the `execute` method, it will be crawled and necessary objects will be extracted and handed over to all producers accordingly.
+
+## Usage of class `Actyon`
 
 Create an `Actyon`:
 
 ```python
 from actyon import Actyon
-my_actyon: Actyon = Actyon[MyResult]("unique_name")
+
+my_actyon: Actyon = Actyon[MyResult]("my_thing")
 ```
 
 Create a producer:
@@ -61,102 +97,22 @@ Create a consumer:
 @my_actyon.consumer
 async def my_consumer(results: List[MyResult]) -> None:
     # do whatever you want with your results
+
+# or use the generalized decorator
+@consume("my_thing")
+async def my_consumer(results: List[MyResult]) -> None:
+    # do whatever you want with your results
 ```
 
-Finally, execute your actyon:
+Execute:
 
 ```python
-from actyon import execute
-execute("unique_name", dependencies)
-
-# or call an actyon directly:
 my_actyon.execute(dependencies)
 ```
 
-By the way, `dependencies` can be any kind of object (iterable of instance of an arbitrary class). By handing it over to the `execute` method, it will be crawled and necessary objects will be extracted and handed over to all producers accordingly.
+## Examples
 
-## Example
-
-```python
-from datetime import datetime
-import os
-import re
-from typing import Any, Dict, List
-
-import attr
-from actyon import Actyon
-from aiohttp import ClientSession
-from asyncio import run
-from dateutil.parser import parse
-from gidgethub.aiohttp import GitHubAPI
-
-
-query: str = """
-{
-  viewer {
-    login
-  }
-  rateLimit {
-    limit
-    cost
-    remaining
-    resetAt
-  }
-}
-"""
-
-
-def camal_to_snake(camal_case: str) -> str:
-    return re.sub("(?!^)([A-Z]+)", r"_\1", camal_case).lower()
-
-
-@attr.s(slots=True)
-class Rate:
-    limit: int = attr.ib()
-    cost: int = attr.ib()
-    remaining: int = attr.ib()
-    reset_at: datetime = attr.ib(converter=parse)
-
-
-rate_actyon: Actyon = Actyon[Rate]("rate")
-
-
-@rate_actyon.producer
-async def rate_producer(github: GitHubAPI) -> List[Rate]:
-    response: Dict[str, Any] = await github.graphql(query)
-    return [
-        Rate(
-            **{
-                camal_to_snake(key): value
-                for key, value in response["rateLimit"].items()
-            },
-        ),
-    ]
-
-
-@rate_actyon.consumer
-async def rate_consumer(rates: List[Rate]) -> None:
-    for rate in rates:
-        print(rate)
-    
-    if len(rates) == 0:
-        print("no rates found")
-
-
-async def main():
-    async with ClientSession() as session:
-        await rate_actyon.execute(
-            GitHubAPI(
-                session=session,
-                requester=os.environ["GITHUB_USER"],
-                oauth_token=os.environ["GITHUB_TOKEN"],
-            )
-        )
-
-
-if __name__ == "__main__":
-    run(main())
-```
+* [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py)
 
 ## Nerd Section
 
