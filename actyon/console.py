@@ -77,7 +77,6 @@ class DisplayHook(ActyonHook):
     async def event(self, event: HookEvent) -> None:
         if event.type == HookEventType.START:
             log.info(f"actyon stared: {event.actyon.name}")
-            self._running_actyons.append(event.actyon.name)
             self.phase = ActyonPhase.PRODUCE
             self.state = ActyonState.UNKNOWN
             self._running: bool = True
