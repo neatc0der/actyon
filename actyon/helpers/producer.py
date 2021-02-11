@@ -3,10 +3,11 @@ from inspect import iscoroutinefunction
 from logging import Logger
 from typing import Generic, List, Type, TypeVar
 
-from typing_extensions import get_args
-
 from actyon.exceptions import ProducerError
 from actyon.hook import HookEventType
+
+from typing_extensions import get_args
+
 from .common import FunctionWrapper, WrapperCollection, filter_results
 from .injector import Injector
 from .log import get_logger
@@ -20,16 +21,17 @@ T = TypeVar("T")
 class Producer(Generic[T], FunctionWrapper):
     def verify(self) -> None:
         if any(p for p in self._signature.parameters.values() if p.annotation.__name__ == "_empty"):
-            raise ProducerError(self, f"at least one parameter was not annotated: {self._func.__name__}" +
-                                " ({self._func.__module__})")
+            raise ProducerError(self, f"at least one parameter was not annotated: {self._func.__name__}"
+                                      f" ({self._func.__module__})")
 
         if len(self._signature.parameters) != len(set(p.annotation for p in self._signature.parameters.values())):
-            raise ProducerError(self, f"at least one parameter annotation is not unique: {self._func.__name__} " +
-                                "({self._func.__module__})")
+            raise ProducerError(self, f"at least one parameter annotation is not unique: {self._func.__name__} "
+                                      f"({self._func.__module__})")
 
         t: Type = get_args(self.__orig_class__)[0]
-        if self._signature.return_annotation is not List[t]:
-            raise ProducerError(self, f"invalid return annotation: {self._func.__name__} ({self._func.__module__})")
+        if self._signature.return_annotation not in (t, List[t]):
+            raise ProducerError(self, f"return annotation needs to be {t.__name__} or List[{t.__name__}]: "
+                                      f"{self._func.__name__} ({self._func.__module__})")
 
         if not iscoroutinefunction(self._func):
             raise ProducerError(self, f"producer is not async: {self._func.__name__} ({self._func.__module__})")
