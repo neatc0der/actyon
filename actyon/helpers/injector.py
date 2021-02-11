@@ -1,6 +1,13 @@
+from collections import defaultdict
 from inspect import Signature, signature
 from itertools import product
+from logging import Logger
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Tuple, Type
+
+from .log import get_logger
+
+
+log: Logger = get_logger()
 
 
 class Injector:
@@ -9,28 +16,33 @@ class Injector:
         self._dependencies: Dict[Type, List[Any]] = self._unpack(obj)
 
     def _unpack(self, obj: Any) -> Dict[Type, List[Any]]:
-        if type(obj).__module__ in ("typing", "builtins") and (isinstance(obj, (str, bytes, bytearray)) or
-                                                               not isinstance(obj, Iterable)):
-            return {}
+        instances: Dict[Type, List[Any]] = defaultdict(lambda: [])
+        open_objs: List[Any] = [obj]
+        count: int = 0
+        while len(open_objs) > 0:
+            if count > 999:
+                log.error(f"injector crawled in deep data structure - aborting after {count} iterations")
+                break
+            count += 1
+            for i in range(len(open_objs)):
+                sub_obj: Any = open_objs.pop()
+                sub_type: Type = type(sub_obj)
+                if sub_obj is None or sub_type in (str, bytes, bytearray, type):
+                    continue
+                if isinstance(sub_obj, Iterable) or sub_obj not in instances[sub_type]:
+                    if sub_type.__module__ not in ("typing", "builtins"):
+                        instances[sub_type].append(sub_obj)
 
-        instances: Dict[Type, List[Any]] = {
-            type(obj): [obj],
-        }
+                    if isinstance(sub_obj, Dict):
+                        open_objs.extend(list(sub_obj.values()))
+                    elif isinstance(sub_obj, Iterable):
+                        open_objs.extend(list(sub_obj))
+                    elif hasattr(obj, '__slots__'):
+                        open_objs.extend([getattr(obj, a) for a in obj.__slots__])
+                    elif hasattr(obj, '__dict__'):
+                        open_objs.extend(list(obj.__dict__.values()))
 
-        subobjects: Iterable = ()
-        if isinstance(obj, Iterable):
-            subobjects = obj
-        elif hasattr(obj, '__dict__'):
-            subobjects = obj.__dict__.values()
-        elif hasattr(obj, '__slots__'):
-            subobjects = (getattr(obj, a) for a in obj.__slots__)
-
-        for o in subobjects:
-            if o not in instances.get(type(o), []):
-                for key, value in self._unpack(o).items():
-                    instances[key] = instances.get(key, []) + value
-
-        return instances
+        return dict(instances)
 
     def add(self, obj: Any, t: Type = None) -> None:
         key: Type = t or type(obj)
