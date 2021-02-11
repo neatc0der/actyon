@@ -97,11 +97,6 @@ Create a consumer:
 @my_actyon.consumer
 async def my_consumer(results: List[MyResult]) -> None:
     # do whatever you want with your results
-
-# or use the generalized decorator
-@consume("my_thing")
-async def my_consumer(results: List[MyResult]) -> None:
-    # do whatever you want with your results
 ```
 
 Execute:
