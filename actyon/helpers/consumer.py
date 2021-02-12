@@ -19,17 +19,18 @@ T = TypeVar("T")
 class Consumer(Generic[T], FunctionWrapper):
     def verify(self) -> None:
         if len(self._signature.parameters) == 0:
-            raise ConsumerError(f"missing parameter for consumption: {self._func.__name__} ({self._func.__module__})")
+            raise ConsumerError(self, f"missing parameter for consumption: {self._func.__name__}"
+                                      f" ({self._func.__module__})")
 
         if len(self._signature.parameters) > 1:
-            raise ConsumerError(f"too many parameters: {self._func.__name__} ({self._func.__module__})")
+            raise ConsumerError(self, f"too many parameters: {self._func.__name__} ({self._func.__module__})")
 
         t: Type = get_args(self.__orig_class__)[0]
         if next(iter(self._signature.parameters.values())).annotation is not List[t]:
-            raise ConsumerError(f"invalid parameter annotation: {self._func.__name__} ({self._func.__module__})")
+            raise ConsumerError(self, f"invalid parameter annotation: {self._func.__name__} ({self._func.__module__})")
 
         if self._signature.return_annotation is not None:
-            raise ConsumerError(f"invalid return annotation: {self._func.__name__} ({self._func.__module__})")
+            raise ConsumerError(self, f"invalid return annotation: {self._func.__name__} ({self._func.__module__})")
 
         if not iscoroutinefunction(self._func):
             raise ConsumerError(self, f"consumer is not async: {self._func.__name__} ({self._func.__module__})")
