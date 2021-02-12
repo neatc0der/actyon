@@ -52,9 +52,9 @@ class Actyon(Generic[T]):
         return cls.all.get(name)
 
     @classmethod
-    def get_or_create(cls, name: str, t: Type) -> "Actyon":
+    def get_or_create(cls, name: str, t: Type, **options: Dict[str, Any]) -> "Actyon":
         if name not in cls.all:
-            return Actyon[t](name)
+            return Actyon[t](name, **options)
 
         return cls.get(name)
 

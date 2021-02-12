@@ -21,10 +21,11 @@ class Flux(Generic[T]):
         type: str = attr.ib()
         data: Dict[str, Any] = attr.ib(factory=dict)
 
-    def __init__(self, initial: T):
+    def __init__(self, initial: T, **options: Dict[str, Any]):
         self._store: T = initial
         self._queue: Queue[Tuple[str, Dict[str, Any]]] = None
         self._task: Task = None
+        self._options: Dict[str, Any] = options
 
     @property
     def state(self) -> T:
@@ -88,7 +89,7 @@ class Flux(Generic[T]):
             raise FluxError("reducer needs to be called with a name")
 
         t: Type = get_args(self.__orig_class__)[0] if hasattr(self, "__orig_class__") else None
-        actyon: Actyon = Actyon.get_or_create(arg, t)
+        actyon: Actyon = Actyon.get_or_create(arg, t, **self._options)
         if len(actyon.producers) > 0:
             raise FluxError(f"reducer already exists: {arg}")
 
@@ -107,7 +108,7 @@ class Flux(Generic[T]):
 
     def effect(self, name: str) -> Callable[[Callable[[T], None]], Callable[[T], None]]:
         t: Type = get_args(self.__orig_class__)[0] if hasattr(self, "__orig_class__") else None
-        actyon: Actyon = Actyon.get_or_create(name, t)
+        actyon: Actyon = Actyon.get_or_create(name, t, **self._options)
 
         def _effect_consumer(f: Callable[[t], None]) -> Callable[[t], None]:
             async def effect(state: List[t]) -> None:
