@@ -46,7 +46,7 @@ async def rate_producer(github: GitHubAPI) -> Rate:
             camel_to_snake(key): value
             for key, value in response["rateLimit"].items()
         },
-    ),
+    )
 
 
 @consume("rate")
