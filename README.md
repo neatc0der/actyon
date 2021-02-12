@@ -106,7 +106,7 @@ Finally, execute your actyon:
 ```python
 from actyon import execute
 
-execute("my_actyon", dependencies)
+await execute("my_actyon", dependencies)
 ```
 
 By the way, `dependencies` can be any kind of object (iterable or simply an instance of your favorite class). By handing it over to the `execute` method, it will be crawled and necessary objects will be extracted and handed over to all producers accordingly.
@@ -141,7 +141,7 @@ async def my_consumer(results: List[MyResult]) -> None:
 Execute:
 
 ```python
-my_actyon.execute(dependencies)
+await my_actyon.execute(dependencies)
 ```
 
 ## Examples
