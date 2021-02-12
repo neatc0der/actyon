@@ -57,5 +57,10 @@ class Injector:
             for p in sig.parameters.values()
         ))
 
+        async def _wrapper(**kwargs: Dict[str, Any]) -> List[Any]:
+            return [await func(**kwargs)]
+
+        f: Callable[..., Any] = _wrapper if not issubclass(sig.return_annotation, List) else func
+
         for values in combinations:
-            yield func(**dict(zip(keywords, values)))
+            yield f(**dict(zip(keywords, values)))
