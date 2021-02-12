@@ -62,13 +62,13 @@ class Actyon(Generic[T]):
         if self._hook is not None:
             await self._hook.event(HookEvent(actyon=self, type=event_type))
 
-    async def execute(self, obj: Union[Any, Injector]) -> None:
+    async def execute(self, *objs: Union[Any, Injector]) -> None:
         await self.send_event(HookEventType.START)
         injector: Injector
-        if isinstance(obj, Injector):
-            injector = obj
+        if len(objs) == 1 and isinstance(objs[0], Injector):
+            injector = objs[0]
         else:
-            injector = Injector(obj)
+            injector = Injector(objs)
 
         data: List[T] = await self.producers.execute(injector)
         await self.send_event(HookEventType.AFTER_PRODUCE)
@@ -85,7 +85,7 @@ class Actyon(Generic[T]):
     def consumer(self, func: Callable[[List[T]], None] = None) -> Callable[[List[T]], None]:
         def _inner(f: Callable[[List[T]], None]) -> Callable[[List[T]], None]:
             t: Type = get_args(self.__orig_class__)[0]
-            consumer: Consumer = Consumer[t](self, func)
+            consumer: Consumer = Consumer[t](self, f)
             self.consumers.add(consumer)
             return f
 
@@ -94,10 +94,10 @@ class Actyon(Generic[T]):
 
         return _inner
 
-    def producer(self, func: Callable[..., Any] = None) -> Callable[..., Any]:
+    def producer(self, func: Callable[..., Any] = None, **options: Dict[str, Any]) -> Callable[..., Any]:
         def _inner(f: Callable[..., Any]) -> Callable[..., Any]:
             t: Type = get_args(self.__orig_class__)[0] if hasattr(self, "__orig_class__") else None
-            producer: Producer = Producer[t](self, func)
+            producer: Producer = Producer[t](self, f, **options)
             self.producers.add(producer)
             return f
 
