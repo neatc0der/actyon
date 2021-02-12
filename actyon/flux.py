@@ -21,14 +21,17 @@ class Flux(Generic[T]):
         type: str = attr.ib()
         data: Dict[str, Any] = attr.ib(factory=dict)
 
-    def __init__(self, initial: T, **options: Dict[str, Any]):
+    def __init__(self, initial: T, unsafe: bool = False, **options: Dict[str, Any]):
         self._store: T = initial
         self._queue: Queue[Tuple[str, Dict[str, Any]]] = None
         self._task: Task = None
+        self._unsafe: bool = unsafe
         self._options: Dict[str, Any] = options
 
     @property
     def state(self) -> T:
+        if self._unsafe:
+            return self._store
         return deepcopy(self._store)
 
     @state.setter
