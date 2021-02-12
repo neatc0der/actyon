@@ -37,7 +37,46 @@
 pip install actyon
 ```
 
-## Simple Usage
+## Usage
+
+### Simple Flux
+
+Define your store, like `MyStore`.
+
+Create a flux environment including the initial value for your store.
+
+```python
+from actyon.flux import Flux
+
+flux: Flux[MyStore] = Flux[MyStore](initial=initial_store)
+```
+
+Create reducers like this:
+
+```python
+@flux.reducer
+async def my_reducer(state: MyStore, action: Flux.Action) -> MyState:
+    # your magic code ...
+    return state
+```
+
+Optionally, add effects that are executed after successful reducers:
+
+```python
+@flux.effect("my_reducer")
+async def my_effect(state: MyStore) -> None:
+    # do whatever you want with the state, just don't expect alterations will affect other functions
+```
+
+Finally, run your flux!
+
+```python
+await flux.run()
+await flux.dispatch("my_reducer")
+await flux.done()
+```
+
+### Multiplex Producers and Consumers
 
 Define an interface class for your actyon, like `MyResult`.
 
@@ -46,7 +85,7 @@ Create a producer with return annotation `MyResult` or `List[MyResult]`:
 ```python
 from actyon import produce
 
-@produce("my_thing")
+@produce("my_actyon")
 async def my_producer(dependency: MyDependency) -> MyResult:
     # your magic code ...
     return my_result
@@ -57,7 +96,7 @@ Create a consumer taking exactly one parameter of type `List[MyResult]`:
 ```python
 from actyon import consume
 
-@consume("my_thing")
+@consume("my_actyon")
 async def my_consumer(results: List[MyResult]) -> None:
     # do whatever you want with your results
 ```
@@ -67,19 +106,19 @@ Finally, execute your actyon:
 ```python
 from actyon import execute
 
-execute("my_thing", dependencies)
+execute("my_actyon", dependencies)
 ```
 
 By the way, `dependencies` can be any kind of object (iterable or simply an instance of your favorite class). By handing it over to the `execute` method, it will be crawled and necessary objects will be extracted and handed over to all producers accordingly.
 
-## Usage of class `Actyon`
+### Working with `Actyon`
 
 Create an `Actyon`:
 
 ```python
 from actyon import Actyon
 
-my_actyon: Actyon = Actyon[MyResult]("my_thing")
+my_actyon: Actyon = Actyon[MyResult]("my_actyon")
 ```
 
 Create a producer:
@@ -107,6 +146,7 @@ my_actyon.execute(dependencies)
 
 ## Examples
 
+* [Flux](https://github.com/neatc0der/actyon/tree/master/examples/flux.py)
 * [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py)
 
 ## Nerd Section
@@ -121,7 +161,7 @@ Aside from answer N° 1, I want to make clear I'm not a java developer getting s
 
 ### Gotcha. Why did you decide on this approach?
 
-Once you start developing software, you want it to simplify things. That's the whole definition of a software developer by the way: we are lazy by definition. Anyway, this code shows how you can multiplex tasks and sync them on the interface level. Your tasks are executed asynchronously all together, results are gathered and in the end they are being processed further - again, asynchronously all together. The decorator functionality allows for the application of the SOLID principle, which is pretty need:
+Once you start developing software, you want it to simplify things. That's the whole definition of a software developer by the way: we are lazy by definition. Anyway, this code shows how you can multiplex tasks and sync them on the interface level. Your tasks are executed asynchronously all together, results are gathered and in the end they are being processed further - again, asynchronously all together. The decorator functionality allows for the application of the SOLID principle, which is pretty neat:
 
 * Single-responsibility principle
 * Open–closed principle
