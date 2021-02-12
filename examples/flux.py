@@ -16,7 +16,7 @@ flux: Flux = Flux[Counter](
 
 @flux.reducer
 async def increment(state: Counter, action: Flux.Action) -> Counter:
-    state.value += action.get("inc", 1)
+    state.value += action.data.get("inc", 1)
     print(state)
     return state
 
@@ -24,7 +24,7 @@ async def increment(state: Counter, action: Flux.Action) -> Counter:
 @flux.effect("increment")
 async def increment_effect(state: Counter) -> None:
     if state.value < 10:
-        await flux.dispatch("increment", {"inc": state.value})
+        await flux.dispatch("increment", inc=state.value)
 
 
 async def main():
