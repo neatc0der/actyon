@@ -1,7 +1,7 @@
 from asyncio import gather
-from inspect import iscoroutinefunction
+from inspect import Signature, iscoroutinefunction
 from logging import Logger
-from typing import Generic, List, Type, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Type, TypeVar
 
 from actyon.exceptions import ProducerError
 from actyon.hook import HookEventType
@@ -19,6 +19,10 @@ T = TypeVar("T")
 
 
 class Producer(Generic[T], FunctionWrapper):
+    def __init__(self, actyon: "actyon.actyon.Actyon", func: Callable[..., Any], **options: Dict[str, Any]) -> None:
+        super().__init__(actyon, func)
+        self._custom_validator: Callable[[Signature], None] = options.get("validator")
+
     def verify(self) -> None:
         if any(p for p in self._signature.parameters.values() if p.annotation.__name__ == "_empty"):
             raise ProducerError(self, f"at least one parameter was not annotated: {self._func.__name__}"
@@ -36,24 +40,34 @@ class Producer(Generic[T], FunctionWrapper):
         if not iscoroutinefunction(self._func):
             raise ProducerError(self, f"producer is not async: {self._func.__name__} ({self._func.__module__})")
 
+        if self._custom_validator is not None:
+            self._custom_validator(self._signature)
+
     def required(self) -> List[str]:
         return [
             p.annotation.name
             for p in self._signature.parameters.values()
         ]
 
-    async def __call__(self, injector: Injector) -> List[T]:
-        return await filter_results(await gather(
-            *injector.inject_to(self._func),
-            return_exceptions=True,
-        ), self.actyon)
+    async def __call__(self, injector: Injector) -> List[List[T]]:
+        return await filter_results(
+            await gather(
+                *injector.inject_to(self._func),
+                return_exceptions=True,
+            ),
+            self.actyon,
+        )
 
 
 class ProducerCollection(WrapperCollection[T, Producer]):
     async def execute(self, injector: Injector) -> List[T]:
-        results: List[List[T]] = await filter_results(await gather(
-            *(producer(injector) for producer in self._functions),
-            return_exceptions=True), self.actyon)
+        results: List[List[T]] = await filter_results(
+            await gather(
+                *(producer(injector) for producer in self._functions),
+                return_exceptions=True
+            ),
+            self.actyon,
+        )
 
         if len(self._functions) == 0:
             log.warning(f"no producers available for this actyon: {self.actyon.name}")
