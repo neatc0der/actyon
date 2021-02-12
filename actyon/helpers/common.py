@@ -35,7 +35,7 @@ async def filter_results(returns: List[Union[T, BaseException]], actyon: "actyon
                           exc_info=exc)
 
         else:
-            log.exception("unexpected error during producer execution", exc_info=exc)
+            log.exception("unexpected error during execution", exc_info=exc)
 
     return results
 
@@ -86,3 +86,6 @@ class WrapperCollection(Generic[T, F], ActyonChild):
 
     async def execute(*args, **kwargs) -> Any:
         raise NotImplementedError()
+
+    def __len__(self) -> int:
+        return len(self._functions)
