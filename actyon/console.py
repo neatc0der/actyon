@@ -51,6 +51,7 @@ class DisplayHook(ActyonHook):
             phase: ActyonState.UNKNOWN
             for phase in ActyonPhase
         }
+        self._message: str = ""
 
     @property
     def state(self) -> ActyonState:
@@ -108,7 +109,7 @@ class DisplayHook(ActyonHook):
             log.info(f"actyon ended: {event.actyon.name}")
 
     @property
-    def status(self):
+    def status(self) -> str:
         status: str = []
         for phase in ActyonPhase:
             if phase == self._phase and self._running:
@@ -123,15 +124,15 @@ class DisplayHook(ActyonHook):
 
     async def _spin(self, actyon: Actyon) -> None:
         prefix: str = self.state.value if self._color else ""
-        message: str = f"Actyon: {actyon.name} "
-        spinner: PixelSpinner = HookPixelSpinner(prefix + message, file=stdout)
+        self._message = f"Actyon: {actyon.name} "
+        spinner: PixelSpinner = HookPixelSpinner(prefix + self._message, file=stdout)
         try:
             while self._running:
                 await sleep(0.1)
                 prefix = self.overall_state.value if self._color else ""
-                spinner.message = f"{prefix}{message}{self.status}".strip() + " "
+                spinner.message = f"{prefix}{self._message}{self.status}".strip() + " "
                 spinner.next()
 
         finally:
-            spinner.write('')
+            spinner.write("")
             spinner.finish()
