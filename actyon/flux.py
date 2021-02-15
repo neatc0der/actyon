@@ -4,8 +4,11 @@ from inspect import Signature
 from typing import Any, Callable, Dict, Generic, List, Tuple, Type, TypeVar, get_args, overload
 
 import attr
-from actyon import Actyon
-from actyon.exceptions import ActyonError
+from colorama import Style
+
+from .actyon import Actyon
+from .console import DisplayHook, get_symbol
+from .exceptions import ActyonError
 
 
 class FluxError(ActyonError):
@@ -110,6 +113,7 @@ class Flux(Generic[T]):
         return actyon.producer(validator=reducer_validator)
 
     def effect(self, name: str) -> Callable[[Callable[[T], None]], Callable[[T], None]]:
+        # todo: verify async and signature
         t: Type = get_args(self.__orig_class__)[0] if hasattr(self, "__orig_class__") else None
         actyon: Actyon = Actyon.get_or_create(name, t, **self._options)
 
@@ -119,3 +123,16 @@ class Flux(Generic[T]):
             return actyon.consumer(effect)
 
         return _effect_consumer
+
+
+class FluxHook(DisplayHook):
+    @property
+    def status(self) -> str:
+        if self._running:
+            return ""
+
+        status: str = get_symbol(self.overall_state)
+        if self._color:
+            status = self.overall_state.value + status + Style.RESET_ALL
+
+        return status
