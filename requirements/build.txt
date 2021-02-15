@@ -1,5 +1,8 @@
 flake8
 flake8-import-order
+mike
+mkdocs
+mkdocs-mermaid2-plugin
 mypy
 pep8-naming
 wheel

@@ -1,0 +1,13 @@
+site_name: Actyon
+site_author: neatc0der
+site_url: https://neatcoder.github.io/actyon/latest/
+repo_url: https://github.com/neatc0der/actyon/
+theme:
+  name: readthedocs
+plugins:
+  - search
+  - mermaid2
+nav:
+  - Actyon: index.md
+  - Flux: flux.md
+  - State Machine: sm.md
