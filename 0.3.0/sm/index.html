@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="neatc0der" name="author"/>
+<link href="https://neatcoder.github.io/actyon/latest/sm/" rel="canonical"/>
+<link href="../img/favicon.ico" rel="shortcut icon"/>
+<title>State Machine - Actyon</title>
+<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
+<link href="../css/theme.css" rel="stylesheet">
+<link href="../css/theme_extra.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet"/>
+<link href="../css/version-select.css" rel="stylesheet"/>
+<script>
+    // Current page data
+    var mkdocs_page_name = "State Machine";
+    var mkdocs_page_input_path = "sm.md";
+    var mkdocs_page_url = "/actyon/latest/sm/";
+  </script>
+<script defer="" src="../js/jquery-2.1.1.min.js"></script>
+<script defer="" src="../js/modernizr-2.8.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</link></link></head>
+<body class="wy-body-for-nav" role="document">
+<div class="wy-grid-for-nav">
+<nav class="wy-nav-side stickynav" data-toggle="wy-nav-shift">
+<div class="wy-side-scroll">
+<div class="wy-side-nav-search">
+<a class="icon icon-home" href=".."> Actyon</a>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search docs" title="Type search term here" type="text"/>
+</form>
+</div>
+</div>
+<div aria-label="main navigation" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="..">Actyon</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../flux/">Flux</a>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">State Machine</a>
+<ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#example-traffic-light">Example: Traffic Light</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#experimental">Experimental</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+<nav aria-label="top navigation" class="wy-nav-top" role="navigation">
+<i class="fa fa-bars" data-toggle="wy-nav-top"></i>
+<a href="..">Actyon</a>
+</nav>
+<div class="wy-nav-content">
+<div class="rst-content">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="wy-breadcrumbs">
+<li><a href="..">Docs</a> »</li>
+<li>State Machine</li>
+<li class="wy-breadcrumbs-aside">
+<a class="icon icon-github" href="https://github.com/neatc0der/actyon/edit/master/docs/sm.md"> Edit on GitHub</a>
+</li>
+</ul>
+<hr/>
+</div>
+<div role="main">
+<div class="section">
+<h1 id="state-machine">State Machine</h1>
+<h2 id="usage">Usage</h2>
+<p>Define your <code>State</code>s and <code>Transition</code>s in your very own <code>StateMachine</code>:</p>
+<pre><code class="language-python">from actyon.sm import State, StateMachine, StateStore
+
+class MyMachine(StateMachine):
+    state_1: State = State("state_1")
+    state_2: State = State("state_2")
+
+    state_1.to(state_2, "my_trigger")
+</code></pre>
+<p>Afterwards you may want to add logic to your state changes. Feel free:</p>
+<pre><code class="language-python">my_machine: MyMachine = MyMachine()
+
+@my_machine.after("my_trigger")
+async def after_my_trigger(state: StateStore, data: Dict[str, Any]) -&gt; None:
+    print(state.previous, "-&gt;", state.current)
+    print("bomb went off:", data.get("tick_tick", "puff"))
+</code></pre>
+<p>Finally, run your machine:</p>
+<pre><code class="language-python">    await traffic_light.run()
+    await traffic_light.trigger("my_trigger", tick_tick="boom")
+    await traffic_light.done()
+</code></pre>
+<h2 id="example-traffic-light">Example: Traffic Light</h2>
+<p>Please find the code <a href="https://github.com/neatc0der/actyon/tree/master/examples/traffic_light.py">here</a>.</p>
+<div class="mermaid">stateDiagram-v2
+    [*] --&gt; Red: run()
+    Red --&gt; [*]: done()
+    Red --&gt; Yellow: go
+    Yellow --&gt; Green: go
+    Green --&gt; Yellow: stop
+    Yellow --&gt; Red: stop
+</div>
+<p>Output:</p>
+<pre><code class="language-shell">RYG
+●○○ runtime: 0.0000 seconds
+○●○ runtime: 0.0006 seconds
+○○● runtime: 1.0030 seconds
+○●○ runtime: 5.0050 seconds
+●○○ runtime: 1.0036 seconds
+</code></pre>
+<h2 id="experimental">Experimental</h2>
+<p>Registering a hook introduces a neat debug output on transitions:</p>
+<pre><code class="language-python">from actyon.sm import StateHook
+
+my_machine: MyMachine = MyMachine(hook=StateHook())
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-shell">$ python my_machine.py
+Actyon: my_trigger ✓ ⇨ state: state_2
+</code></pre>
+</div>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a class="btn btn-neutral" href="../flux/" title="Flux"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+</div>
+<hr/>
+<div role="contentinfo">
+<!-- Copyright etc -->
+</div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+</div>
+</div>
+</section>
+</div>
+<div aria-label="versions" class="rst-versions" role="note">
+<span class="rst-current-version" data-toggle="rst-current-version">
+<a class="fa fa-github" href="https://github.com/neatc0der/actyon/" style="float: left; color: #fcfcfc"> GitHub</a>
+<span><a href="../flux/" style="color: #fcfcfc;">« Previous</a></span>
+</span>
+</div>
+<script>var base_url = '..';</script>
+<script defer="" src="../js/theme.js"></script>
+<script defer="" src="../js/version-select.js"></script>
+<script defer="" src="../search/main.js"></script>
+<script defer="">
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+<script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script><script>mermaid.initialize({});</script></body>
+</html>
