@@ -1,7 +1,5 @@
 from logging import Logger
-from typing import Any, Callable, Dict, Generic, List, Type, TypeVar, Union
-
-from typing_extensions import get_args
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast, get_args
 
 from .exceptions import ActyonError
 from .helpers.consumer import Consumer, ConsumerCollection
@@ -17,23 +15,25 @@ T = TypeVar("T")
 
 
 class Actyon(Generic[T]):
+    __orig_class__: Type
     all: Dict[str, "Actyon"] = {}
 
-    def __init__(self, name: str, **options: Dict[str, Any]) -> None:
+    def __init__(self, name: str, **options: Any) -> None:
         if name in Actyon.all:
             raise ActyonError(f"actyon already exists: {name}")
         self._name: str = name
         self._producers: ProducerCollection[T] = ProducerCollection[T](self)
         self._consumers: ConsumerCollection[T] = ConsumerCollection[T](self)
-        self._hook: ActyonHook = options.get("hook")
+        self._hook: ActyonHook = cast(ActyonHook, options.get("hook"))
 
-        if isinstance(options.get("consumer"), Callable):
-            self.producer(options.get("consumer"))
+        if isinstance(options.get("consumer"), Callable):  # type: ignore
+            self.producer(cast(Callable, options.get("consumer")))
 
-        if isinstance(options.get("producer"), Callable):
-            self.producer(options.get("producer"))
+        if isinstance(options.get("producer"), Callable):  # type: ignore
+            self.producer(cast(Callable, options.get("producer")))
 
-        self.all[self.name] = self
+        if not options.get("unregistered", False):
+            self.all[self.name] = self
 
     @property
     def name(self) -> str:
@@ -48,19 +48,20 @@ class Actyon(Generic[T]):
         return self._consumers
 
     @classmethod
-    def get(cls, name: str) -> "Actyon":
+    def get(cls, name: str) -> Optional["Actyon"]:
         return cls.all.get(name)
 
     @classmethod
     def get_or_create(cls, name: str, t: Type, **options: Dict[str, Any]) -> "Actyon":
-        if name not in cls.all:
-            return Actyon[t](name, **options)
+        a: Optional[Actyon] = cls.get(name)
+        if a is None:
+            a = Actyon[t](name, **options)  # type: ignore
 
-        return cls.get(name)
+        return a
 
     async def send_event(self, event_type: HookEventType) -> None:
         if self._hook is not None:
-            await self._hook.event(HookEvent(actyon=self, type=event_type))
+            await self._hook.event(HookEvent(action=self, type=event_type))
 
     async def execute(self, *objs: Union[Any, Injector]) -> None:
         await self.send_event(HookEventType.START)
@@ -75,17 +76,11 @@ class Actyon(Generic[T]):
         await self.consumers.execute(data)
         await self.send_event(HookEventType.END)
 
-    async def _consume(self, data: List[T]) -> None:
-        for consumer in self._consumers:
-            try:
-                consumer(data)
-            except Exception:
-                log.exception(f"an error occurred while running consumer: {consumer.name} ({consumer.module})")
-
-    def consumer(self, func: Callable[[List[T]], None] = None) -> Callable[[List[T]], None]:
-        def _inner(f: Callable[[List[T]], None]) -> Callable[[List[T]], None]:
+    def consumer(self, func: Optional[Callable[[List[T]], Awaitable]] = None) \
+            -> Union[Callable[..., Awaitable], Callable[[Callable[..., Awaitable]], Callable[..., Awaitable]]]:
+        def _inner(f: Callable[[List[T]], Awaitable]) -> Callable[[List[T]], Awaitable]:
             t: Type = get_args(self.__orig_class__)[0]
-            consumer: Consumer = Consumer[t](self, f)
+            consumer: Consumer = Consumer[t](self, f)  # type: ignore
             self.consumers.add(consumer)
             return f
 
@@ -94,10 +89,11 @@ class Actyon(Generic[T]):
 
         return _inner
 
-    def producer(self, func: Callable[..., Any] = None, **options: Dict[str, Any]) -> Callable[..., Any]:
-        def _inner(f: Callable[..., Any]) -> Callable[..., Any]:
+    def producer(self, func: Optional[Callable[..., Awaitable]] = None, **options: Any) \
+            -> Union[Callable[..., Awaitable], Callable[[Callable[..., Awaitable]], Callable[..., Awaitable]]]:
+        def _inner(f: Callable[..., Awaitable]) -> Callable[..., Awaitable]:
             t: Type = get_args(self.__orig_class__)[0] if hasattr(self, "__orig_class__") else None
-            producer: Producer = Producer[t](self, f, **options)
+            producer: Producer = Producer[t](self, f, **options)  # type: ignore
             self.producers.add(producer)
             return f
 

@@ -1,5 +1,7 @@
+autopep8
+coverage
 flake8
-flake8-import-order
+invoke
 mike
 mkdocs
 mkdocs-mermaid2-plugin

@@ -1,8 +1,6 @@
 # classes
-attrs
+attrs==20.3.0
 
 # console output
-colorama
-prettytable
-progress
-
+colorama==0.4.4
+progress==1.5

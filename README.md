@@ -2,11 +2,14 @@
 
 > Action with a Y! Why? Cause `async` is in the box.
 
-[![MIT license](https://badgen.net/github/license/neatc0der/actyon)](https://github.com/neatc0der/actyon/blob/master/LICENSE)
-[![PyPI](https://badgen.net/pypi/v/actyon)](https://pypi.org/project/actyon/)
-[![Latest Release](https://badgen.net/github/release/neatc0der/actyon/latest)](https://github.com/neatc0der/actyon/releases/latest)
-[![Open Issues](https://badgen.net/github/open-issues/neatc0der/actyon)](https://github.com/neatc0der/actyon/issues)
-[![Open PRs](https://badgen.net/github/open-prs/neatc0der/actyon)](https://github.com/neatc0der/actyon/pulls)
+[![MIT license](https://img.shields.io/github/license/neatc0der/actyon?style=flat-square)](https://github.com/neatc0der/actyon/blob/master/LICENSE)
+[![Status](https://img.shields.io/pypi/status/actyon?style=flat-square)](https://pypi.org/project/actyon/)
+[![Python](https://img.shields.io/pypi/pyversions/actyon?style=flat-square)](https://pypi.org/project/actyon/)
+[![Codecov](https://img.shields.io/codecov/c/github/neatc0der/actyon?style=flat-square)](https://app.codecov.io/gh/neatc0der/actyon)
+
+[![Latest Release](https://img.shields.io/github/v/release/neatc0der/actyon?style=flat-square)](https://github.com/neatc0der/actyon/releases/latest)
+[![Open Issues](https://img.shields.io/github/issues/neatc0der/actyon?style=flat-square)](https://github.com/neatc0der/actyon/issues)
+[![Open PRs](https://img.shields.io/github/issues-pr/neatc0der/actyon?style=flat-square)](https://github.com/neatc0der/actyon/pulls)
 
 `actyon` offers an approach on a multiplexed flux pattern using coroutines ([PEP 492](https://www.python.org/dev/peps/pep-0492/)).
 

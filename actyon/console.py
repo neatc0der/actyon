@@ -1,14 +1,14 @@
 from asyncio.tasks import Task, create_task, sleep
 from enum import Enum
 from sys import stdout
-from typing import Dict
+from typing import Dict, List, Optional
 
 from colorama import Fore, Style
 from progress.spinner import PixelSpinner
 
 from .actyon import Actyon
-from .hook import ActyonHook, HookEvent, HookEventType
 from .helpers.log import get_logger
+from .hook import ActyonHook, HookEvent, HookEventType
 
 
 log = get_logger()
@@ -44,13 +44,14 @@ class HookPixelSpinner(PixelSpinner):
 class DisplayHook(ActyonHook):
     def __init__(self, color: bool = True) -> None:
         self._color = color
-        self._future: Task = False
+        self._future: Optional[Task] = None
         self._running: bool = False
         self._phase: ActyonPhase = ActyonPhase.PRODUCE
-        self._state: Dict[str, ActyonState] = {
+        self._state: Dict[ActyonPhase, ActyonState] = {
             phase: ActyonState.UNKNOWN
             for phase in ActyonPhase
         }
+        self._message: str = ""
 
     @property
     def state(self) -> ActyonState:
@@ -61,10 +62,12 @@ class DisplayHook(ActyonHook):
         self._state[self._phase] = state
 
     @property
-    def overall_state(self) -> ActyonState:
+    def overall_state(self) -> Optional[ActyonState]:
         for state in ActyonState:
             if state in self._state.values():
                 return state
+
+        return None
 
     @property
     def phase(self) -> ActyonPhase:
@@ -76,11 +79,11 @@ class DisplayHook(ActyonHook):
 
     async def event(self, event: HookEvent) -> None:
         if event.type == HookEventType.START:
-            log.info(f"actyon stared: {event.actyon.name}")
+            log.info(f"actyon stared: {event.action.name}")
             self.phase = ActyonPhase.PRODUCE
             self.state = ActyonState.UNKNOWN
-            self._running: bool = True
-            self._future = create_task(self._spin(event.actyon))
+            self._running = True
+            self._future = create_task(self._spin(event.action))
 
         elif event.type == HookEventType.AFTER_PRODUCE:
             self.phase = ActyonPhase.CONSUME
@@ -104,13 +107,14 @@ class DisplayHook(ActyonHook):
             if self.state == ActyonState.UNKNOWN:
                 self.state = ActyonState.OKAY
             self._running = False
-            await self._future
-            log.info(f"actyon ended: {event.actyon.name}")
+            if self._future is not None and not self._future.done():
+                await self._future
+            log.info(f"actyon ended: {event.action.name}")
 
     @property
-    def status(self):
-        status: str = []
-        for phase in ActyonPhase:
+    def status(self) -> str:
+        status: List[str] = []
+        for phase in ActyonPhase:  # type: ignore
             if phase == self._phase and self._running:
                 break
 
@@ -123,15 +127,15 @@ class DisplayHook(ActyonHook):
 
     async def _spin(self, actyon: Actyon) -> None:
         prefix: str = self.state.value if self._color else ""
-        message: str = f"Actyon: {actyon.name} "
-        spinner: PixelSpinner = HookPixelSpinner(prefix + message, file=stdout)
+        self._message = f"Actyon: {actyon.name} "
+        spinner: PixelSpinner = HookPixelSpinner(prefix + self._message, file=stdout)
         try:
             while self._running:
                 await sleep(0.1)
-                prefix = self.overall_state.value if self._color else ""
-                spinner.message = f"{prefix}{message}{self.status}".strip() + " "
+                prefix = self.overall_state.value if self._color and self.overall_state is not None else ""
+                spinner.message = f"{prefix}{self._message}{self.status}".strip() + " "
                 spinner.next()
 
         finally:
-            spinner.write('')
+            spinner.write("")
             spinner.finish()

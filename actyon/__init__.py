@@ -1,7 +1,7 @@
 import inspect
 from asyncio.tasks import gather
 from logging import Logger
-from typing import Any, Callable, Iterable, List, Type
+from typing import Any, Callable, Iterable, List, Optional, Type
 
 from .actyon import Actyon, ActyonError
 from .console import DisplayHook  # noqa: F401
@@ -12,10 +12,10 @@ from .hook import ActyonHook, HookEvent, HookEventType  # noqa: F401
 _log: Logger = _get_logger()
 
 
-async def execute(*names: Iterable[str], dependency: Any) -> None:
-    actyons: Iterable[Actyon] = []
+async def execute(*names: str, dependency: Any) -> None:
+    actyons: List[Actyon] = []
     for name in names:
-        actyon: Actyon = Actyon.get(name)
+        actyon: Optional[Actyon] = Actyon.get(name)
         if actyon is None:
             raise ActyonError(f"unknown actyon: {name}")
         actyons.append(actyon)
@@ -44,7 +44,7 @@ def produce(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
 def consume(name: str) -> Callable[[Callable[[List[Any]], None]], Callable[[List[Any]], None]]:
     def _inner(func: Callable[..., Any]) -> Callable[..., Any]:
         t: Type = next(iter(inspect.signature(func).parameters.values())).annotation \
-                  if len(inspect.signature(func).parameters) > 0 else None
+            if len(inspect.signature(func).parameters) > 0 else None
         actyon: Actyon = Actyon.get_or_create(name, t)
         return actyon.consumer(func)
 
