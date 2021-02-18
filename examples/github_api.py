@@ -58,7 +58,7 @@ async def rate_consumer(rates: List[Rate]) -> None:
         print("no rates found")
 
 
-async def main():
+async def main() -> None:
     async with ClientSession() as session:
         await execute(
             "rate",

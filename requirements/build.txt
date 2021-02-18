@@ -1,5 +1,7 @@
+autopep8
+coverage
 flake8
-flake8-import-order
+invoke
 mypy
 pep8-naming
 wheel

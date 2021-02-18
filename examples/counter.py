@@ -6,7 +6,7 @@ import attr
 
 @attr.s
 class Counter:
-    value = attr.ib()
+    value: int = attr.ib()
 
 
 flux: Flux = Flux[Counter](
@@ -27,7 +27,7 @@ async def increment_effect(state: Counter) -> None:
         await flux.dispatch("increment", inc=state.value)
 
 
-async def main():
+async def main() -> None:
     await flux.run()
     await flux.dispatch("increment")
     await flux.done()
