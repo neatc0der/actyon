@@ -1,5 +1,6 @@
 from enum import Enum
 
+import actyon
 import attr
 
 
@@ -17,7 +18,7 @@ class HookEventType(Enum):
 @attr.s
 class HookEvent:
     type: HookEventType = attr.ib()
-    actyon: "actyon.actyon.Actyon" = attr.ib()
+    action: "actyon.Actyon" = attr.ib()
 
 
 class ActyonHook:
