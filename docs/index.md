@@ -1,6 +1,6 @@
 # Actyon
 
-`actyon` can be used natively or via the provided interface extensions [Flux](flux/) and [State Machine]({)sm/).
+`actyon` can be used natively or via the provided interface extensions [Flux](flux/) and [State Machine](sm/).
 
 ## Simple Usage
 

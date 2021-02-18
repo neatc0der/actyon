@@ -48,3 +48,20 @@ graph TD
     C --> B
     C -->D[Done]
 ```
+
+## Experimental
+
+Registering a hook introduces a neat debug output on transitions:
+
+```python
+from actyon.flux import FluxHook
+
+flux: Flux[MyStore] = Flux[MyStore](initial=initial_store, hook=FluxHook())
+```
+
+Result:
+
+```shell
+$ python my_flux.py
+Actyon: my_reducer ✓
+```

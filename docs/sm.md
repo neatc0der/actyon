@@ -11,7 +11,7 @@ class MyMachine(StateMachine):
     state_1: State = State("state_1")
     state_2: State = State("state_2")
 
-    state_1.to(state_2, "my_transition")
+    state_1.to(state_2, "my_trigger")
 ```
 
 Afterwards you may want to add logic to your state changes. Feel free:
@@ -19,8 +19,8 @@ Afterwards you may want to add logic to your state changes. Feel free:
 ```python
 my_machine: MyMachine = MyMachine()
 
-@my_machine.after("my_transition")
-async def after_my_transition(state: StateStore, data: Dict[str, Any]) -> None:
+@my_machine.after("my_trigger")
+async def after_my_trigger(state: StateStore, data: Dict[str, Any]) -> None:
     print(state.previous, "->", state.current)
     print("bomb went off:", data.get("tick_tick", "puff"))
 ```
@@ -29,7 +29,7 @@ Finally, run your machine:
 
 ```python
     await traffic_light.run()
-    await traffic_light.trigger("my_transition", tick_tick="boom")
+    await traffic_light.trigger("my_trigger", tick_tick="boom")
     await traffic_light.done()
 ```
 
@@ -47,6 +47,17 @@ stateDiagram-v2
     Yellow --> Red: stop
 ```
 
+Output:
+
+```shell
+RYG
+●○○ runtime: 0.0000 seconds
+○●○ runtime: 0.0006 seconds
+○○● runtime: 1.0030 seconds
+○●○ runtime: 5.0050 seconds
+●○○ runtime: 1.0036 seconds
+```
+
 ## Experimental
 
 Registering a hook introduces a neat debug output on transitions:
@@ -61,5 +72,5 @@ Result:
 
 ```shell
 $ python my_machine.py
-Actyon: my_transition ✓ ⇨ state: state_2
+Actyon: my_trigger ✓ ⇨ state: state_2
 ```
