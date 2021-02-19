@@ -2,3 +2,5 @@
 branch = True
 source = actyon/
 
+[report]
+show_missing = True
