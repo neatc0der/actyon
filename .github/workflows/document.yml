@@ -25,7 +25,6 @@ jobs:
 
       - name: Deploy Documentation
         run: |
-          ls -ls
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git fetch origin gh-pages

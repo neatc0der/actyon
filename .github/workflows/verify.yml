@@ -46,6 +46,9 @@ jobs:
             .coverage
             coverage.xml
 
+      - name: Debugging...
+        run: ls -ls
+
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v1
         with:
