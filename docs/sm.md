@@ -28,9 +28,9 @@ async def after_my_trigger(state: StateStore, data: Dict[str, Any]) -> None:
 Finally, run your machine:
 
 ```python
-    await traffic_light.run()
-    await traffic_light.trigger("my_trigger", tick_tick="boom")
-    await traffic_light.done()
+    await my_machine.run()
+    await my_machine.trigger("my_trigger", tick_tick="boom")
+    await my_machine.done()
 ```
 
 ## Example: Traffic Light
