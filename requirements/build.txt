@@ -2,9 +2,6 @@ autopep8
 coverage
 flake8
 invoke
-mike
-mkdocs
-mkdocs-mermaid2-plugin
 mypy
 pep8-naming
 wheel
