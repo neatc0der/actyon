@@ -23,6 +23,12 @@ pip install actyon
 
 See [Documentation](https://neatc0der.github.io/actyon/)
 
+## Examples
+
+* [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py) (Actyon)
+* [Counter](https://github.com/neatc0der/actyon/tree/master/examples/counter.py) (Flux)
+* [Traffic Light](https://github.com/neatc0der/actyon/tree/master/examples/traffic_light.py) (State Machine)
+
 ## Idea
 
 * An actyon is defining an isolated execution run.
@@ -43,12 +49,6 @@ See [Documentation](https://neatc0der.github.io/actyon/)
 * **Typing is mandatory**
 * **Coroutines for producers and consumers are mandatory**
 * **Python 3.8+ is required**
-
-## Examples
-
-* [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py) (Actyon)
-* [Counter](https://github.com/neatc0der/actyon/tree/master/examples/counter.py) (Flux)
-* [Traffic Light](https://github.com/neatc0der/actyon/tree/master/examples/traffic_light.py) (State Machine)
 
 ## Nerd Section
 
