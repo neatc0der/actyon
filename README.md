@@ -13,6 +13,22 @@
 
 `actyon` offers an approach on a multiplexed flux pattern using coroutines ([PEP 492](https://www.python.org/dev/peps/pep-0492/)).
 
+## Install
+
+```bash
+pip install actyon
+```
+
+## Documentation
+
+See [Documentation](https://neatc0der.github.io/actyon/)
+
+## Examples
+
+* [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py) (Actyon)
+* [Counter](https://github.com/neatc0der/actyon/tree/master/examples/counter.py) (Flux)
+* [Traffic Light](https://github.com/neatc0der/actyon/tree/master/examples/traffic_light.py) (State Machine)
+
 ## Idea
 
 * An actyon is defining an isolated execution run.
@@ -33,124 +49,6 @@
 * **Typing is mandatory**
 * **Coroutines for producers and consumers are mandatory**
 * **Python 3.8+ is required**
-
-## Install
-
-```bash
-pip install actyon
-```
-
-## Usage
-
-### Simple Flux
-
-Define your store, like `MyStore`.
-
-Create a flux environment including the initial value for your store.
-
-```python
-from actyon.flux import Flux
-
-flux: Flux[MyStore] = Flux[MyStore](initial=initial_store)
-```
-
-Create reducers like this:
-
-```python
-@flux.reducer
-async def my_reducer(state: MyStore, action: Flux.Action) -> MyState:
-    # your magic code ...
-    return state
-```
-
-Optionally, add effects that are executed after successful reducers:
-
-```python
-@flux.effect("my_reducer")
-async def my_effect(state: MyStore) -> None:
-    # do whatever you want with the state, just don't expect alterations will affect other functions
-```
-
-Finally, run your flux!
-
-```python
-await flux.run()
-await flux.dispatch("my_reducer")
-await flux.done()
-```
-
-### Multiplex Producers and Consumers
-
-Define an interface class for your actyon, like `MyResult`.
-
-Create a producer with return annotation `MyResult` or `List[MyResult]`:
-
-```python
-from actyon import produce
-
-@produce("my_actyon")
-async def my_producer(dependency: MyDependency) -> MyResult:
-    # your magic code ...
-    return my_result
-```
-
-Create a consumer taking exactly one parameter of type `List[MyResult]`:
-
-```python
-from actyon import consume
-
-@consume("my_actyon")
-async def my_consumer(results: List[MyResult]) -> None:
-    # do whatever you want with your results
-```
-
-Finally, execute your actyon:
-
-```python
-from actyon import execute
-
-await execute("my_actyon", dependencies)
-```
-
-By the way, `dependencies` can be any kind of object (iterable or simply an instance of your favorite class). By handing it over to the `execute` method, it will be crawled and necessary objects will be extracted and handed over to all producers accordingly.
-
-### Working with `Actyon`
-
-Create an `Actyon`:
-
-```python
-from actyon import Actyon
-
-my_actyon: Actyon = Actyon[MyResult]("my_actyon")
-```
-
-Create a producer:
-
-```python
-@my_actyon.producer
-async def my_producer(dependency: MyDependency) -> MyResult:
-    # your magic code ...
-    return my_result
-```
-
-Create a consumer:
-
-```python
-@my_actyon.consumer
-async def my_consumer(results: List[MyResult]) -> None:
-    # do whatever you want with your results
-```
-
-Execute:
-
-```python
-await my_actyon.execute(dependencies)
-```
-
-## Examples
-
-* [Flux](https://github.com/neatc0der/actyon/tree/master/examples/flux.py)
-* [Github API](https://github.com/neatc0der/actyon/tree/master/examples/github_api.py)
 
 ## Nerd Section
 
