@@ -2,7 +2,7 @@ from collections import defaultdict
 from inspect import Signature, signature
 from itertools import product
 from logging import Logger
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Tuple, Type
+from typing import Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Tuple, Type
 
 from .log import get_logger
 
@@ -44,11 +44,11 @@ class Injector:
 
         return dict(instances)
 
-    def add(self, obj: Any, t: Type = None) -> None:
+    def add(self, obj: Any, t: Type = None.__class__) -> None:
         key: Type = t or type(obj)
         self._dependencies[key] = self._dependencies.get(key, []) + [obj]
 
-    def inject_to(self, func: Callable[..., Any]) -> Iterator[Any]:
+    def inject_to(self, func: Callable[..., Awaitable]) -> Iterator[Any]:
         sig: Signature = signature(func)
         keywords: List[str] = [name for name in sig.parameters.keys()]
 
@@ -57,10 +57,10 @@ class Injector:
             for p in sig.parameters.values()
         ))
 
-        async def _wrapper(**kwargs: Dict[str, Any]) -> List[Any]:
+        async def _wrapper(**kwargs: Any) -> List[Any]:
             return [await func(**kwargs)]
 
-        f: Callable[..., Any] = _wrapper if not issubclass(sig.return_annotation, List) else func
+        f: Callable[..., Awaitable] = _wrapper if not issubclass(sig.return_annotation, List) else func  # type: ignore
 
         for values in combinations:
             yield f(**dict(zip(keywords, values)))
