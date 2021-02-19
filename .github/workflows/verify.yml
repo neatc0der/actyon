@@ -24,14 +24,6 @@ jobs:
       - name: Verify, Test & Package
         run: tox
 
-      - name: Share Coverage Data
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-data
-          path: |
-            .coverage
-            coverage.xml
-
   codecov:
     name: Code Coverage
     runs-on: ubuntu-latest
@@ -41,18 +33,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Fetch Coverage Data
-        uses: actions/download-artifact@v2
+      - name: Prepare Python
+        uses: actions/setup-python@v2
         with:
-          name: coverage-data
-          path: |
-            .coverage
-            coverage.xml
+          python-version: 3.8 
 
-      - name: Debugging...
-        run: ls -la
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install tox coverage
 
-      - name: "Upload coverage to Codecov"
+      - name: Execute coverage
+        run: tox -e coverage
+
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
