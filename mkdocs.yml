@@ -11,3 +11,7 @@ nav:
   - Actyon: index.md
   - Flux: flux.md
   - State Machine: sm.md
+extra_css:
+  - css/version-select.css
+extra_javascript:
+  - js/version-select.js
