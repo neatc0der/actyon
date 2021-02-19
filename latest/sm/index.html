@@ -101,9 +101,9 @@ async def after_my_trigger(state: StateStore, data: Dict[str, Any]) -&gt; None:
     print("bomb went off:", data.get("tick_tick", "puff"))
 </code></pre>
 <p>Finally, run your machine:</p>
-<pre><code class="language-python">    await traffic_light.run()
-    await traffic_light.trigger("my_trigger", tick_tick="boom")
-    await traffic_light.done()
+<pre><code class="language-python">    await my_machine.run()
+    await my_machine.trigger("my_trigger", tick_tick="boom")
+    await my_machine.done()
 </code></pre>
 <h2 id="example-traffic-light">Example: Traffic Light</h2>
 <p>Please find the code <a href="https://github.com/neatc0der/actyon/tree/master/examples/traffic_light.py">here</a>.</p>
