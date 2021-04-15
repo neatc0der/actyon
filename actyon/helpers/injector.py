@@ -3,6 +3,7 @@ from inspect import Signature, signature
 from itertools import product
 from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Tuple, Type
+from typing_utils import issubtype
 
 from .log import get_logger
 
@@ -60,7 +61,7 @@ class Injector:
         async def _wrapper(**kwargs: Any) -> List[Any]:
             return [await func(**kwargs)]
 
-        f: Callable[..., Awaitable] = _wrapper if not issubclass(sig.return_annotation, List) else func  # type: ignore
-
+        f: Callable[..., Awaitable] = _wrapper \
+            if not issubtype(sig.return_annotation, List[Any]) else func  # type: ignore
         for values in combinations:
             yield f(**dict(zip(keywords, values)))
