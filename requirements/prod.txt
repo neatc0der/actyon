@@ -1,6 +1,6 @@
 # classes
 attrs==20.3.0
-issubtype==0.0.3
+typing_utils==0.0.3
 
 # console output
 colorama==0.4.4
