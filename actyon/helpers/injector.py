@@ -3,6 +3,7 @@ from inspect import Signature, signature
 from itertools import product
 from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Tuple, Type
+from typing_utils import issubtype
 
 from .log import get_logger
 
@@ -27,20 +28,20 @@ class Injector:
             for i in range(len(open_objs)):
                 sub_obj: Any = open_objs.pop()
                 sub_type: Type = type(sub_obj)
-                if sub_obj is None or sub_type in (str, bytes, bytearray, type):
+                if sub_obj is None or sub_type in (str, bytes, bytearray, type) or sub_obj in instances[sub_type]:
                     continue
-                if isinstance(sub_obj, Iterable) or sub_obj not in instances[sub_type]:
+                if not isinstance(sub_obj, Iterable):
                     if sub_type.__module__ not in ("typing", "builtins"):
                         instances[sub_type].append(sub_obj)
 
-                    if isinstance(sub_obj, Dict):
-                        open_objs.extend(list(sub_obj.values()))
-                    elif isinstance(sub_obj, Iterable):
-                        open_objs.extend(list(sub_obj))
-                    elif hasattr(obj, '__slots__'):
-                        open_objs.extend([getattr(obj, a) for a in obj.__slots__])
-                    elif hasattr(obj, '__dict__'):
-                        open_objs.extend(list(obj.__dict__.values()))
+                if isinstance(sub_obj, Dict):
+                    open_objs.extend(list(sub_obj.values()))
+                elif isinstance(sub_obj, Iterable):
+                    open_objs.extend(list(sub_obj))
+                elif hasattr(sub_obj, '__slots__'):
+                    open_objs.extend([getattr(sub_obj, a) for a in sub_obj.__slots__])
+                elif hasattr(sub_obj, '__dict__'):
+                    open_objs.extend(list(sub_obj.__dict__.values()))
 
         return dict(instances)
 
@@ -60,7 +61,7 @@ class Injector:
         async def _wrapper(**kwargs: Any) -> List[Any]:
             return [await func(**kwargs)]
 
-        f: Callable[..., Awaitable] = _wrapper if not issubclass(sig.return_annotation, List) else func  # type: ignore
-
+        f: Callable[..., Awaitable] = _wrapper \
+            if not issubtype(sig.return_annotation, List[Any]) else func  # type: ignore
         for values in combinations:
             yield f(**dict(zip(keywords, values)))

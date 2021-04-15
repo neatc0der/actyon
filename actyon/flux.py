@@ -59,7 +59,7 @@ class Flux(Generic[T]):
 
     async def run(self) -> None:
         if self._queue is None:
-            self._queue = Queue()
+            self._queue = Queue(maxsize=1)
 
         if self._task is not None:
             raise FluxError("flux is already running")
