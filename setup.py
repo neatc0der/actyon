@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords='actyon async multiplex flux statemachine',
-    url=f'https://github.com/{REPOSITORY_NAME}',
+    url=f'https://{OWNER}.github.com/{PROJECT_NAME}/',
     download_url=f'https://github.com/{REPOSITORY_NAME}/archive/{PROJECT_VERSION}.tar.gz',
     author=OWNER,
     author_email='',
@@ -47,6 +47,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     packages=find_packages(exclude=['*.tests']),
     package_dir={
