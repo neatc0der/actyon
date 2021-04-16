@@ -1,4 +1,4 @@
-PROJECT_VERSION = "0.3.1"
+PROJECT_VERSION = "0.4.0"
 
 PACKAGE_NAME = "actyon"
 PROJECT_NAME = PACKAGE_NAME.replace("_", "-")
